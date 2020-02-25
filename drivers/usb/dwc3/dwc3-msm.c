@@ -1,5 +1,4 @@
-/* Copyright (c) 2012-2018, The Linux Foundation. All rights reserved.
- * Copyright (C) 2019 XiaoMi, Inc.
+/* Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -53,7 +52,7 @@
 #include "debug.h"
 #include "xhci.h"
 
-#define DWC3_IDEV_CHG_MAX 2000
+#define DWC3_IDEV_CHG_MAX 1500
 #define DWC3_HVDCP_CHG_MAX 1800
 #define DWC3_WAKEUP_SRC_TIMEOUT 5000
 
@@ -3811,10 +3810,6 @@ skip_psy_type:
 
 	if (mdwc->chg_type == DWC3_CDP_CHARGER)
 		mA = DWC3_IDEV_CHG_MAX;
-	/* HTH-53747 add by zhangyaohui 20190422  begin */
-        if (mdwc->chg_type == DWC3_SDP_CHARGER)
-                mA = 500;
-	/* HTH-53747 add by zhangyaohui 20190422  end */
 
 	/* Save bc1.2 max_curr if type-c charger later moves to diff mode */
 	mdwc->bc1p2_current_max = mA;
@@ -4143,6 +4138,12 @@ static void dwc3_msm_otg_sm_work(struct work_struct *w)
 			pm_runtime_get_sync(mdwc->dev);
 			dbg_event(0xFF, "SUSP gsync",
 				atomic_read(&mdwc->dev->power.usage_count));
+		} else {
+			/*
+			 * Release PM Wakelock if PM resume had happened from
+			 * peripheral mode bus suspend case.
+			 */
+			pm_relax(mdwc->dev);
 		}
 		break;
 
