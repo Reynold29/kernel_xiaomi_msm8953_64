@@ -96,7 +96,6 @@ static int sdcardfs_create(struct inode *dir, struct dentry *dentry,
 		err = -ENOMEM;
 		goto out_unlock;
 	}
-
 	copied_fs->umask = 0;
 	task_lock(current);
 	current->fs = copied_fs;
